@@ -5,9 +5,12 @@ def create_tables():
     conn = sqlite3.connect('medical_records.db')
     cursor = conn.cursor()
 
+    # Drop the billing_codes table if it exists
+    cursor.execute('DROP TABLE IF EXISTS billing_codes')
+
     # Create billing_codes table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS billing_codes (
+    CREATE TABLE billing_codes (
         code_id INTEGER PRIMARY KEY,
         icd_code TEXT,
         description TEXT
