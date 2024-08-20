@@ -18,15 +18,38 @@ patterns = [
 pattern_docs = [nlp(text) for text in patterns]
 matcher.add("MEDICAL_TERMS", pattern_docs)
 
-# Define a synonyms dictionary with expanded coverage
+# Expanded synonyms dictionary
 synonyms = {
-    "diabetes": ["diabetes", "sugar", "glucose", "high sugar"],
-    "hypertension": ["hypertension", "high blood pressure", "elevated blood pressure", "angina"],
-    "chest pain": ["chest pain", "angina", "discomfort in chest"],
-    "fractured femur": ["fractured femur", "broken leg", "broken thigh"],
-    "chronic obstructive pulmonary disease": ["COPD", "chronic obstructive pulmonary disease", "emphysema"],
-    "otitis media": ["otitis media", "ear infection", "middle ear infection"]
+    "diabetes": [
+        "diabetes", "type 2 diabetes", "type 2 diabetes mellitus", "sugar", 
+        "glucose", "high sugar", "hyperglycemia", "insulin resistance"
+    ],
+    "hypertension": [
+        "hypertension", "high blood pressure", "elevated blood pressure", 
+        "angina", "essential hypertension", "primary hypertension"
+    ],
+    "chest pain": [
+        "chest pain", "angina", "discomfort in chest", "cardiac pain", 
+        "sternal pain", "thoracic pain", "heart pain"
+    ],
+    "fractured femur": [
+        "fractured femur", "broken leg", "broken thigh", "femoral fracture", 
+        "thigh bone fracture", "femur break"
+    ],
+    "chronic obstructive pulmonary disease": [
+        "COPD", "chronic obstructive pulmonary disease", "emphysema", 
+        "chronic bronchitis", "airway obstruction", "lung disease", 
+        "chronic lung disease", "obstructive airway disease"
+    ],
+    "otitis media": [
+        "otitis media", "ear infection", "middle ear infection", 
+        "ear inflammation", "ear pain", "otitis media unspecified"
+    ]
 }
+
+def preprocess_text(text):
+    """Preprocess the input text by converting to lowercase and stripping unwanted characters."""
+    return text.lower().strip()
 
 def get_synonym_matches(text):
     """Expand the input text with synonyms using fuzzy matching."""
@@ -36,9 +59,14 @@ def get_synonym_matches(text):
         for key, syns in synonyms.items():
             if fuzz.ratio(token.text, key) > 65:  # Match to the key directly
                 expanded_terms.add(key)
-            elif any(fuzz.ratio(token.text, syn) > 55 for syn in syns):
+            elif any(fuzz.ratio(token.text, syn) > 59 for syn in syns):
                 expanded_terms.add(key)
     return expanded_terms
+
+def rank_matches(matches, expanded_terms):
+    """Rank the matches based on their relevance to the expanded terms."""
+    ranked_matches = sorted(matches, key=lambda x: fuzz.ratio(x[1].lower(), ' '.join(expanded_terms)), reverse=True)
+    return ranked_matches
 
 @app.route('/')
 def index():
@@ -46,7 +74,7 @@ def index():
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    record_text = request.form['record_text']
+    record_text = preprocess_text(request.form['record_text'])
     print(f"Input text: {record_text}")
 
     # Process the text using SpaCy NLP
@@ -66,12 +94,18 @@ def recommend():
     conn = sqlite3.connect('medical_records.db')
     cursor = conn.cursor()
     recommendations = []
+    
     for term in expanded_terms:
-        cursor.execute("SELECT icd_code, description FROM billing_codes WHERE description LIKE ?", (f'%{term}%',))  # Using f-string for clarity
+        cursor.execute("SELECT icd_code, description FROM billing_codes WHERE LOWER(description) LIKE ?", (f'%{term}%',))
         recommendations.extend(cursor.fetchall())
+    
     conn.close()
 
-    return render_template('results.html', record_text=record_text, recommendations=recommendations)
+    # Rank the matches based on relevance
+    ranked_recommendations = rank_matches(recommendations, expanded_terms)
+    print(f"Ranked recommendations: {ranked_recommendations}")
+
+    return render_template('results.html', record_text=record_text, recommendations=ranked_recommendations)
 
 if __name__ == '__main__':
     app.run(debug=True)
