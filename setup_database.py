@@ -5,14 +5,6 @@ def create_tables():
     conn = sqlite3.connect('medical_records.db')
     cursor = conn.cursor()
 
-    # Create medical_records table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS medical_records (
-        record_id INTEGER PRIMARY KEY,
-        record_text TEXT
-    )
-    ''')
-
     # Create billing_codes table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS billing_codes (
@@ -27,28 +19,6 @@ def create_tables():
     conn.close()
 
     print("Database setup completed successfully.")
-
-def insert_sample_medical_records():
-    # Connect to the database
-    conn = sqlite3.connect('medical_records.db')
-    cursor = conn.cursor()
-
-    # Insert sample medical records
-    sample_records = [
-        ("Patient has a history of diabetes and hypertension. Complains of chest pain."),
-        ("Patient presents with a fractured femur after a car accident."),
-        ("Routine check-up. Patient is in good health with no significant issues."),
-        ("Patient diagnosed with chronic obstructive pulmonary disease (COPD)."),
-        ("Child presents with symptoms of otitis media, including ear pain and fever.")
-    ]
-
-    cursor.executemany('INSERT INTO medical_records (record_text) VALUES (?)', [(record,) for record in sample_records])
-
-    # Commit changes and close the connection
-    conn.commit()
-    conn.close()
-
-    print("Sample medical records inserted successfully.")
 
 def insert_sample_billing_codes():
     # Connect to the database
@@ -77,5 +47,4 @@ if __name__ == "__main__":
     create_tables()
 
     # Step 2: Populate the tables with sample data
-    insert_sample_medical_records()
     insert_sample_billing_codes()
