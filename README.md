@@ -12,9 +12,13 @@ This project provides a web application to recommend billing codes based on a us
 * Allows users to return to the main page for entering a new record.
 
 ### Getting Started
-Install necessary libraries and a pretrained spaCy model
+Install necessary libraries
 ```bash
 pip install -r requirements.txt
+```
+Download a pre-trained spaCy model
+```bash
+python -m spacy download en_core_web_sm
 ```
 Create the database of billing codes
 ```bash
