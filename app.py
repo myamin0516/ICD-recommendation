@@ -22,15 +22,11 @@ matcher.add("MEDICAL_TERMS", pattern_docs)
 synonyms = {
     "diabetes": [
         "diabetes", "type 2 diabetes", "type 2 diabetes mellitus",
-        "glucose", "high sugar", "hyperglycemia"
+        "glucose", "high blood sugar", "hyperglycemia"
     ],
     "hypertension": [
         "hypertension", "high blood pressure", "elevated blood pressure", 
         "angina"
-    ],
-    "chest pain": [
-        "chest pain", "angina", "discomfort in chest",
-        "cardiac pain", "heart pain"
     ],
     "fractured femur": [
         "fractured femur", "broken leg", "broken thigh",
@@ -74,7 +70,7 @@ def get_synonym_matches(text):
     doc = nlp(text.lower())
     for token in doc:
         for key, syns in synonyms.items():
-            if fuzz.ratio(token.text, key) > 80:  # Match to the key directly
+            if fuzz.ratio(token.text, key) > 70:  # Match to the key directly
                 expanded_terms.add(key)
             elif any(fuzz.ratio(token.text, syn) > 75 for syn in syns):
                 expanded_terms.add(key)
@@ -110,7 +106,7 @@ def recommend():
     # Connect to the database and query for matching billing codes
     conn = sqlite3.connect('medical_records.db')
     cursor = conn.cursor()
-    recommendations = []
+    recommendations = set()  # Use a set to avoid duplicates
     
     for term in expanded_terms:
         term_parts = term.split()
@@ -118,15 +114,20 @@ def recommend():
             cursor.execute("SELECT icd_code, description FROM billing_codes WHERE LOWER(description) LIKE ?", (f'%{part}%',))
             results = cursor.fetchall()
             print(f"Database query results for part '{part}' of term '{term}': {results}")
-            recommendations.extend(results)
+            # Add each result to the set to ensure uniqueness
+            recommendations.update(results)
     
     conn.close()
 
+    # Convert the set back to a list for ranking and rendering
+    recommendations = list(recommendations)
+    
     # Rank the matches based on relevance
     ranked_recommendations = rank_matches(recommendations, expanded_terms)
     print(f"Ranked recommendations: {ranked_recommendations}")
 
     return render_template('results.html', record_text=record_text, recommendations=ranked_recommendations)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

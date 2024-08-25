@@ -4,75 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medical Record to Billing Code Recommendation</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #0056b3;
-        }
-        form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        select {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        input[type="submit"] {
-            background: #0056b3;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background: #004494;
-        }
-    </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <h1>Enter Medical Record</h1>
+<body class="bg-light">
+    <div class="container my-5 p-4 bg-white rounded shadow">
+        <h1 class="text-primary mb-4">Enter Medical Record</h1>
+        <p class="text-danger mb-4"><strong>Note:</strong> The database has limited billing codes(all in dropdown).</p>
         <form action="/recommend" method="post">
-            <label for="record_select">Select a Sample Medical Record:</label>
-            <select id="record_select" onchange="populateRecordText()">
-                <option value="">-- Select a Record --</option>
-                {% for record in sample_records %}
-                    <option value="{{ record.text }}">{{ record.title }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="record_text">Or Enter Medical Record Text:</label>
-            <textarea id="record_text" name="record_text" rows="10" placeholder="Enter medical record text here..."></textarea><br>
-
-            <input type="submit" value="Get Billing Code Recommendations">
+            <div class="form-group">
+                <label for="record_select">Select a Sample Medical Record:</label>
+                <select id="record_select" class="form-control" onchange="populateRecordText()">
+                    <option value="">-- Select a Record --</option>
+                    {% for record in sample_records %}
+                        <option value="{{ record.text }}">{{ record.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="record_text">Or Enter Medical Record Text:</label>
+                <textarea id="record_text" name="record_text" class="form-control" rows="10" placeholder="Enter medical record text here..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Get Billing Code Recommendations</button>
         </form>
     </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
         function populateRecordText() {
@@ -83,7 +43,7 @@
             if (select.selectedIndex > 0) {
                 textArea.value = select.value;
             } else {
-                // Clear text area if empty option is selected
+                // Clear text area if empty option is selected      
                 textArea.value = "";
             }
         }
