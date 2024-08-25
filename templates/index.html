@@ -34,6 +34,14 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
         input[type="submit"] {
             background: #0056b3;
             color: white;
@@ -51,9 +59,37 @@
     <div class="container">
         <h1>Enter Medical Record</h1>
         <form action="/recommend" method="post">
-            <textarea name="record_text" rows="10" placeholder="Enter medical record text here..."></textarea><br>
+            <label for="record_select">Select a Sample Medical Record:</label>
+            <select id="record_select" onchange="populateRecordText()">
+                <option value="">-- Select a Record --</option>
+                {% for record in sample_records %}
+                    <option value="{{ record.text }}">{{ record.title }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="record_text">Or Enter Medical Record Text:</label>
+            <textarea id="record_text" name="record_text" rows="10" placeholder="Enter medical record text here..."></textarea><br>
+
             <input type="submit" value="Get Billing Code Recommendations">
         </form>
     </div>
+
+    <script>
+        function populateRecordText() {
+            var select = document.getElementById("record_select");
+            var textArea = document.getElementById("record_text");
+
+            // Check if a valid option is selected (not the empty option)
+            if (select.selectedIndex > 0) {
+                textArea.value = select.value;
+            } else {
+                // Clear text area if empty option is selected
+                textArea.value = "";
+            }
+        }
+
+        // Call populateRecordText on page load
+        window.onload = populateRecordText;
+    </script>
 </body>
 </html>
